@@ -1,0 +1,25 @@
+# Build
+build/
+
+# ESP-IDF config
+sdkconfig
+sdkconfig.old
+dependencies.lock
+
+# IDE
+.vscode/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# Git submodule
+esp-idf/

@@ -60,11 +60,6 @@ air_monitor/
 ├── README.md  
 └── sdkconfig  
 
-## 📈 Data Logging Format (CSV)
-Example:  
-time,temperature,humidity,pm2.5  
-12:00,30.2,65,12  
-
 ## ⚠️ Notes
 - Do NOT upload `esp-idf/` to the repository  
 - Use a stable 5V supply for PMS7001  

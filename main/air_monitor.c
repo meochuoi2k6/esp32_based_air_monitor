@@ -115,17 +115,21 @@ bool wifi_init() {
 
 
 
-void wait_for_time_sync()
+bool wait_for_time_sync(int max_wait_ms)
 {
     time_t now = 0;
     struct tm timeinfo = {0};
+    int waited_ms = 0;
 
-    while (timeinfo.tm_year < (2020 - 1900)) {
+    while (timeinfo.tm_year < (2020 - 1900) && waited_ms < max_wait_ms) {
         printf("Waiting for time sync...\n");
         vTaskDelay(pdMS_TO_TICKS(2000));
+        waited_ms += 2000;
         time(&now);
         localtime_r(&now, &timeinfo);
     }
+
+    return timeinfo.tm_year >= (2020 - 1900);
 }
 
 void get_time_str(char *buffer, int max_len)
@@ -362,7 +366,9 @@ void app_main(void)
     
     wifi_init();
 
-    wait_for_time_sync();
+    if (!wait_for_time_sync(20000)) {
+        printf("Time sync timeout, continuing without SNTP time\n");
+    }
     bool isSd = init_sd_card();
 
     printf("WiFi ready\n");
@@ -384,10 +390,17 @@ void app_main(void)
 
     int pm25_sum = 0;
     int pm10_sum = 0;
+    float temp_sum = 0;
+    float hum_sum = 0;
+    float pres_sum = 0;
     int count = 0;
 
     while (count < SAMPLE_COUNT)
     {
+        ESP_ERROR_CHECK(bme680_force_measurement(&bme));
+        vTaskDelay(pdMS_TO_TICKS(200));
+        ESP_ERROR_CHECK(bme680_get_results_float(&bme, &values));
+
         int len = uart_read_bytes(UART_PORT, data, 32, pdMS_TO_TICKS(200));
 
         if (len == 32 && data[0] == 0x42 && data[1] == 0x4D)
@@ -400,25 +413,35 @@ void app_main(void)
     
             pm25_sum += pm25;
             pm10_sum += pm10;
+            temp_sum += values.temperature;
+            hum_sum += values.humidity;
+            pres_sum += values.pressure;
             count++;
         }
     }
 
 
-    ESP_ERROR_CHECK(bme680_force_measurement(&bme));
-    vTaskDelay(pdMS_TO_TICKS(200));
-    ESP_ERROR_CHECK(bme680_get_results_float(&bme, &values));
+    // ESP_ERROR_CHECK(bme680_force_measurement(&bme));
+    // vTaskDelay(pdMS_TO_TICKS(200));
+    // ESP_ERROR_CHECK(bme680_get_results_float(&bme, &values));
 
     int pm25_avg = pm25_sum / SAMPLE_COUNT;
     int pm10_avg = pm10_sum / SAMPLE_COUNT;
+    float temp_avg = temp_sum / SAMPLE_COUNT;
+    float hum_avg = hum_sum / SAMPLE_COUNT;
+    float pres_avg = pres_sum / SAMPLE_COUNT;
+    bme680_values_float_t avg_values = values;
+    avg_values.temperature = temp_avg;
+    avg_values.humidity = hum_avg;
+    avg_values.pressure = pres_avg;
 
     printf("Average PM2.5: %d\n", pm25_avg);
     printf("Average PM10 : %d\n", pm10_avg);
-    printf("Temp: %.2f C\n", values.temperature);
-    printf("Humidity: %.2f %%\n", values.humidity);
-    printf("Pressure: %.2f hPa\n", values.pressure);
+    printf("Temp: %.2f C\n", temp_avg);
+    printf("Humidity: %.2f %%\n", hum_avg);
+    printf("Pressure: %.2f hPa\n", pres_avg);
 
-    oled_show(pm25_avg, pm10_avg, values, isWifi, isSd);
+    oled_show(pm25_avg, pm10_avg, avg_values, isWifi, isSd);
     
     char time_s[30];
     get_time_str(time_s, sizeof(time_s));
@@ -426,9 +449,9 @@ void app_main(void)
     w_sd(time_s, 
         pm25_avg, 
         pm10_avg, 
-        values.temperature, 
-        values.humidity, 
-        values.pressure
+        temp_avg,
+        hum_avg,
+        pres_avg
     );
     
     r_sd();

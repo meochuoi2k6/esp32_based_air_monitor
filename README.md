@@ -1,66 +1,96 @@
-# 🌫️ ESP32 Air Monitor
+# ESP32 Air Monitor
 
-## 📌 Overview
-This project is an air quality monitoring system based on ESP32. It collects environmental data, displays it on an OLED screen, and logs data to an SD card.
+## Overview
+This project is an ESP32-based air quality monitoring system built with ESP-IDF. It reads particulate matter data from a PMS7001 sensor, environmental data from a BME680 sensor, shows the result on an SSD1306 OLED, stores measurements to an SD card, synchronizes time over Wi-Fi, and then enters deep sleep to save power.
 
-## ⚙️ Hardware Components
-- ESP32  
-- BME680 (temperature, humidity, gas sensor)  
-- PMS7001 (PM1.0, PM2.5, PM10 dust sensor)  
-- OLED SSD1306 (display)  
-- SD Card Module (data logging)  
+## Hardware
+- ESP32
+- BME680
+- PMS7001
+- SSD1306 OLED
+- SD card module
 
-## 🔌 Wiring
+## Features
+- Reads PM2.5 and PM10 values from PMS7001 over UART
+- Reads temperature, humidity, and pressure from BME680 over I2C
+- Averages samples before displaying and logging
+- Shows device status on OLED, including Wi-Fi and SD icons
+- Logs measurements to `/sdcard/log.csv`
+- Synchronizes system time with SNTP when Wi-Fi is available
+- Uses deep sleep between measurement cycles
 
-### I2C (OLED + BME680)
-- SDA → GPIO21  
-- SCL → GPIO22  
+## Pin Mapping
 
-### UART (PMS7001)
-- RX → GPIO16  
-- TX → GPIO17  
+### I2C
+- SDA -> GPIO21
+- SCL -> GPIO22
 
-### SPI (SD Card)
-- SCK → GPIO18  
-- MISO → GPIO19  
-- MOSI → GPIO23  
-- CS → GPIO5  
+### UART
+- PMS7001 TX -> GPIO16
+- PMS7001 RX -> GPIO17
 
-## 📊 Features
-- Read environmental data from BME680  
-- Measure air quality (PM1.0, PM2.5, PM10) using PMS7001  
-- Display real-time data on OLED  
-- Log data to SD card in CSV format  
+### SPI
+- SCK -> GPIO18
+- MISO -> GPIO19
+- MOSI -> GPIO23
+- CS -> GPIO5
 
-## 🚀 Getting Started
+## Application Flow
+1. Boot and initialize UART, I2C, OLED, and BME680.
+2. Start Wi-Fi and try to synchronize time with SNTP.
+3. Mount the SD card.
+4. Collect valid PMS7001 samples and matching BME680 readings.
+5. Average the collected data.
+6. Update the OLED and append one CSV row to the SD card.
+7. Enter deep sleep for the configured interval.
 
-### 1. Clone repository
-git clone https://github.com/meochuoi2k6/esp32_based_air_monitor
-cd air-monitor  
+The state machine diagram for this flow is available in [docs/air_monitor_state_machine.drawio](/D:/ESP/air_monitor/docs/air_monitor_state_machine.drawio).
 
-### 2. Set up ESP-IDF
-Make sure ESP-IDF is installed and configured:  
-. $IDF_PATH/export.sh  
+## Build And Flash
 
-### 3. Build project
-idf.py build  
+### Prerequisites
+- ESP-IDF installed and configured
+- Target board connected over USB
 
-### 4. Flash to ESP32
-idf.py flash  
+### Build
+```bash
+idf.py build
+```
 
-### 5. Monitor output
-idf.py monitor  
+### Flash
+```bash
+idf.py flash
+```
 
-## 📁 Project Structure
-air_monitor/  
-├── main/  
-├── components/  
-├── build/  
-├── CMakeLists.txt  
-├── README.md  
-└── sdkconfig  
+### Monitor
+```bash
+idf.py monitor
+```
 
-## ⚠️ Notes
-- Do NOT upload `esp-idf/` to the repository  
-- Use a stable 5V supply for PMS7001  
-- Ensure correct wiring for I2C, UART, and SPI  
+## Project Structure
+```text
+air_monitor/
+|-- components/
+|   |-- bme680/
+|   |-- esp_idf_lib_helpers/
+|   |-- i2cdev/
+|   |-- icons/
+|   `-- ssd1306/
+|-- docs/
+|   `-- air_monitor_state_machine.drawio
+|-- main/
+|   `-- air_monitor.c
+|-- CMakeLists.txt
+|-- README.md
+`-- sdkconfig
+```
+
+## Notes
+- Wi-Fi credentials are currently hardcoded in `main/air_monitor.c`.
+- Time synchronization uses a timeout so the device can continue running offline if SNTP is unavailable.
+- If SD card mounting fails, the device can still measure and display data.
+- Use a stable power supply, especially for PMS7001 and the SD card module.
+
+## Current Limitations
+- PMS7001 frame validation currently checks the frame header but does not validate checksum.
+- The main application logic is still concentrated in a single file and can be refactored into smaller modules or FreeRTOS tasks later.

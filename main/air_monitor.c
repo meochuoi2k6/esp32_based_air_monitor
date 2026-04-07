@@ -143,131 +143,131 @@ void get_time_str(char *buffer, int max_len)
     strftime(buffer, max_len, "%Y-%m-%d %H:%M:%S", &timeinfo);
 }
 
-#define UART_PORT UART_NUM_2
-#define TX_PIN 17
-#define RX_PIN 16
+// #define UART_PORT UART_NUM_2
+// #define TX_PIN 17
+// #define RX_PIN 16
 
-#define SDA_GPIO 21
-#define SCL_GPIO 22
-#define I2C_PORT I2C_NUM_0
+// #define SDA_GPIO 21
+// #define SCL_GPIO 22
+// #define I2C_PORT I2C_NUM_0
 
-#define SLEEP_TIME_SEC 60
-#define SAMPLE_COUNT 5
+// #define SLEEP_TIME_SEC 60
+// #define SAMPLE_COUNT 5
 
-ssd1306_t oled;
-bme680_t bme;
+// ssd1306_t oled;
+// bme680_t bme;
 
 //////////////////////////////////////////////////
 // UART
 //////////////////////////////////////////////////
-void uart_init()
-{
-    uart_config_t cfg = {
-        .baud_rate = 9600,
-        .data_bits = UART_DATA_8_BITS,
-        .parity    = UART_PARITY_DISABLE,
-        .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
-    };
+// void uart_init()
+// {
+//     uart_config_t cfg = {
+//         .baud_rate = 9600,
+//         .data_bits = UART_DATA_8_BITS,
+//         .parity    = UART_PARITY_DISABLE,
+//         .stop_bits = UART_STOP_BITS_1,
+//         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+//     };
 
-    uart_driver_install(UART_PORT, 1024, 0, 0, NULL, 0);
-    uart_param_config(UART_PORT, &cfg);
-    uart_set_pin(UART_PORT, TX_PIN, RX_PIN,
-                 UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
-}
+//     uart_driver_install(UART_PORT, 1024, 0, 0, NULL, 0);
+//     uart_param_config(UART_PORT, &cfg);
+//     uart_set_pin(UART_PORT, TX_PIN, RX_PIN,
+//                  UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+// }
 
-void oled_init()
-{
-    memset(&oled, 0, sizeof(oled));
+// void oled_init()
+// {
+//     memset(&oled, 0, sizeof(oled));
 
-    ESP_ERROR_CHECK(
-        ssd1306_init_desc(&oled, I2C_NUM_0, SSD1306_I2C_ADDR0, 21, 22)
-    );
+//     ESP_ERROR_CHECK(
+//         ssd1306_init_desc(&oled, I2C_NUM_0, SSD1306_I2C_ADDR0, 21, 22)
+//     );
 
-    oled.width = 128;
-    oled.height = 64;
+//     oled.width = 128;
+//     oled.height = 64;
 
 
-    // oled.i2c_dev.cfg.sda_pullup_en = 1;
-    // oled.i2c_dev.cfg.scl_pullup_en = 1;
+//     // oled.i2c_dev.cfg.sda_pullup_en = 1;
+//     // oled.i2c_dev.cfg.scl_pullup_en = 1;
 
-    ESP_ERROR_CHECK(ssd1306_init(&oled));
-}
+//     ESP_ERROR_CHECK(ssd1306_init(&oled));
+// }
 
-void draw_char(int x, int y, char c)
-{
-    if (c > 127) return;
+// void draw_char(int x, int y, char c)
+// {
+//     if (c > 127) return;
 
-    for (int col = 0; col < 8; col++) {
-        uint8_t line = font8x8_basic_tr[(int)c][col];
+//     for (int col = 0; col < 8; col++) {
+//         uint8_t line = font8x8_basic_tr[(int)c][col];
 
-        for (int row = 0; row < 8; row++) {
-            if (line & (1 << row)) {
-                ssd1306_set_pixel(&oled, x + col, y + row, OLED_COLOR_WHITE);
-            }
-        }
-    }
-}
+//         for (int row = 0; row < 8; row++) {
+//             if (line & (1 << row)) {
+//                 ssd1306_set_pixel(&oled, x + col, y + row, OLED_COLOR_WHITE);
+//             }
+//         }
+//     }
+// }
 
-void draw_string(int x, int y, const char *str)
-{
-    while (*str) {
-        draw_char(x, y, *str++);
-        x += 8;
-        if (x > 120) break;
-    }
-}
+// void draw_string(int x, int y, const char *str)
+// {
+//     while (*str) {
+//         draw_char(x, y, *str++);
+//         x += 8;
+//         if (x > 120) break;
+//     }
+// }
 
-void draw_bitmap(int x, int y, const uint8_t *bitmap)
-{
-    for (int i = 0; i < 16; i++) {
-        for (int j = 0; j < 16; j++) {
-            int byte = bitmap[i * 2 + j / 8];
-            if (byte & (1 << (7 - (j % 8)))) {
-                ssd1306_set_pixel(&oled, x + j, y + i, OLED_COLOR_WHITE);
-            }
-        }
-    }
-}
+// void draw_bitmap(int x, int y, const uint8_t *bitmap)
+// {
+//     for (int i = 0; i < 16; i++) {
+//         for (int j = 0; j < 16; j++) {
+//             int byte = bitmap[i * 2 + j / 8];
+//             if (byte & (1 << (7 - (j % 8)))) {
+//                 ssd1306_set_pixel(&oled, x + j, y + i, OLED_COLOR_WHITE);
+//             }
+//         }
+//     }
+// }
 
-void oled_show(int pm25, int pm10, bme680_values_float_t v, bool isWifi, bool isSd)
-{
-    char buf[32];
+// void oled_show(int pm25, int pm10, bme680_values_float_t v, bool isWifi, bool isSd)
+// {
+//     char buf[32];
 
-    ssd1306_clear(&oled);
-    draw_bitmap(128 - 16, 0, isWifi ? wifi_on : wifi_off);
-    draw_bitmap(128 - 35, 0, isSd ? sd_ok : sd_fail);
+//     ssd1306_clear(&oled);
+//     draw_bitmap(128 - 16, 0, isWifi ? wifi_on : wifi_off);
+//     draw_bitmap(128 - 35, 0, isSd ? sd_ok : sd_fail);
 
-    sprintf(buf, "PM2.5: %d", pm25);
-    draw_string(0, 16, buf);
-    sprintf(buf, "PM10 : %d", pm10);
-    draw_string(0, 24, buf);
+//     sprintf(buf, "PM2.5: %d", pm25);
+//     draw_string(0, 16, buf);
+//     sprintf(buf, "PM10 : %d", pm10);
+//     draw_string(0, 24, buf);
 
-    sprintf(buf, "Temp : %.1f C", v.temperature);
-    draw_string(0, 32, buf);
+//     sprintf(buf, "Temp : %.1f C", v.temperature);
+//     draw_string(0, 32, buf);
 
-    sprintf(buf, "Hum  : %.1f %%", v.humidity);
-    draw_string(0, 40, buf);
+//     sprintf(buf, "Hum  : %.1f %%", v.humidity);
+//     draw_string(0, 40, buf);
 
-    sprintf(buf, "Pres : %.1f hPa", v.pressure);
-    draw_string(0, 48, buf);
+//     sprintf(buf, "Pres : %.1f hPa", v.pressure);
+//     draw_string(0, 48, buf);
 
-    ssd1306_flush(&oled);
-}
+//     ssd1306_flush(&oled);
+// }
 
 //////////////////////////////////////////////////
 // BME680
 //////////////////////////////////////////////////
-void bme_init()
-{
-    memset(&bme, 0, sizeof(bme));
+// void bme_init()
+// {
+//     memset(&bme, 0, sizeof(bme));
 
-    ESP_ERROR_CHECK(
-         bme680_init_desc(&bme, BME680_I2C_ADDR_0, I2C_NUM_0, 21, 22)
-     );
+//     ESP_ERROR_CHECK(
+//          bme680_init_desc(&bme, BME680_I2C_ADDR_0, I2C_NUM_0, 21, 22)
+//      );
 
-    ESP_ERROR_CHECK(bme680_init_sensor(&bme));
-}
+//     ESP_ERROR_CHECK(bme680_init_sensor(&bme));
+// }
 
 ///////////////////SD INIT////////////////////////
 
@@ -405,7 +405,7 @@ void app_main(void)
 
         if (len == 32 && data[0] == 0x42 && data[1] == 0x4D)
         {
-            int pm25 = (data[12] << 8) | data[13];
+            int pm25 = (data[12] << 8) | data[13]; // xu ly chuoi byte du lieu
             int pm10 = (data[14] << 8) | data[15];
 
             printf("PM2.5: %d\n", pm25);

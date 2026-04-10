@@ -4,10 +4,15 @@
 #include "freertos/task.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include <stdio.h>
+#include <string.h>
 
 #include "ssd1306.h"
-#include "i2cdev.h"
 #include "font8x8_basic.h"
+#include "icons.h"
+#include "wifi_task.h"
+#include "logger_task.h"
+
 #include "sensor_task.h"
 
 
@@ -17,6 +22,8 @@
 
 static ssd1306_t oled;
 static const char *TAG = "display_task";
+
+static bool isWifi = 0;
 
 void oled_init()
 {
@@ -79,19 +86,19 @@ esp_err_t oled_show(sensor_sample_t sample, bool isWifi, bool isSd)
     draw_bitmap(128 - 16, 0, isWifi ? wifi_on : wifi_off);
     draw_bitmap(128 - 35, 0, isSd ? sd_ok : sd_fail);
 
-    //snprintf(buf, sizeof(buf), "PM2.5: %d", sample.pm25);
+    snprintf(buf, sizeof(buf), "PM2.5: %d", sample.pm25);
     draw_string(0, 16, buf);
 
-    //snprintf(buf, sizeof(buf), "PM10 : %d", sample.pm10);
+    snprintf(buf, sizeof(buf), "PM10 : %d", sample.pm10);
     draw_string(0, 24, buf);
 
-    //snprintf(buf, sizeof(buf), "Temp : %.1f C", sample.temperature);
+    snprintf(buf, sizeof(buf), "Temp : %.1f C", sample.temperature);
     draw_string(0, 32, buf);
 
-    //snprintf(buf, sizeof(buf), "Hum  : %.1f %%", sample.humidity);
+    snprintf(buf, sizeof(buf), "Hum  : %.1f %%", sample.humidity);
     draw_string(0, 40, buf);
 
-    //snprintf(buf, sizeof(buf), "Pres : %.1f hPa", sample.pressure);
+    snprintf(buf, sizeof(buf), "Pres : %.1f hPa", sample.pressure);
     draw_string(0, 48, buf);
 
     if (ssd1306_flush(&oled) != ESP_OK) {
@@ -103,14 +110,15 @@ esp_err_t oled_show(sensor_sample_t sample, bool isWifi, bool isSd)
 
 void display_task(void *pvParameters)
 {
-    oled_init;
+    oled_init();
 
-    QueueHandle_t queue = (QueueHandle_t) pvParameters;
+    display_params_t *p = (display_params_t *)pvParameters;
     sensor_sample_t sample;
 
     while (1) {
-        if (xQueueReceive(queue, &sample, portMAX_DELAY)) {
-            esp_err_t err = oled_show(sample, isWifi, isSd);
+        if (xQueueReceive(p->sensor_queue, &sample, portMAX_DELAY)) {
+            isWifi = wifi_is_connected();
+            esp_err_t err = oled_show(sample, isWifi, logger_is_sd_ready());
             if(err != ESP_OK){
                 ESP_LOGE(TAG, "Display Error: %s", esp_err_to_name(err));
             } else {

@@ -8,16 +8,27 @@ All notable changes to this project will be documented in this file.
 - Added initial RTOS task folders for `display`, `sensors`, `storage`, `time`, and `wifi`.
 - Added `sensor_sample_t` as a shared runtime data model for sensor output.
 - Added a first `sensor_task` module API with initialization, averaged sampling, latest-sample access, and FreeRTOS task entry points.
-- Added initial `display_task` and `logger_task` source files as part of the ongoing task-based refactor.
+- Added queue-based data flow from `sensor_task` to `display_task` and `logger_task`.
+- Added `display_task` for OLED rendering with Wi-Fi and SD card status indicators.
+- Added `logger_task` for timestamped CSV logging to SD card.
+- Added `wifi_task` and `time_task` modules to separate Wi-Fi connection handling from SNTP time synchronization.
+- Added component `CMakeLists.txt` files for the new task modules.
 
 ### Changed
 - Started refactoring the application from a single-file flow toward task-oriented modules under `tasks/`.
 - Moved UART and BME680 sensor handling logic into `tasks/sensors/sensor_task.c`.
-- Began converting OLED update logic into a queue-driven `display_task` design.
+- Converted `main/air_monitor.c` into a FreeRTOS task bootstrap that creates sample queues and starts Wi-Fi, time, sensor, display, and logger tasks.
+- Converted OLED update logic into a queue-driven `display_task` design.
+- Moved `i2cdev_init()` to `app_main()` so shared I2C setup is initialized once before sensor and display tasks start.
+- Disabled the BME680 gas heater because the project currently uses temperature, humidity, and pressure only; this reduces sensor self-heating and temperature offset.
+
+### Fixed
+- Fixed missing type includes in display, logger, icon, and font headers that caused compile-time parser errors.
+- Improved SD logger recovery when the SD card is removed and reinserted by unmounting on write failure and retrying mount periodically.
 
 ### Notes
-- The RTOS refactor is still in progress and is not fully integrated into `main` yet.
-- Some newly added task modules are scaffolding-stage and may still require compile and integration fixes before use.
+- The RTOS task split is now wired into `main`, but hardware validation is still required on the ESP32 target.
+- `idf.py build` could not be verified in the local Codex shell because the ESP-IDF Python virtual environment is missing on this machine.
 
 ## [0.2.0] - 2026-04-06
 

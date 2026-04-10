@@ -8,6 +8,7 @@
 #ifndef MAIN_FONT8X8_BASIC_H_
 #define MAIN_FONT8X8_BASIC_H_
 
+#include <stdint.h>
 
 //    Constant: font8x8_basic_tr
 //    Contains an 90 digree transposed 8x8 font map for unicode points 

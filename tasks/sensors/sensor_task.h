@@ -3,6 +3,8 @@
 #include <stdbool.h>
 
 #include "esp_err.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 
 typedef struct {
     int pm25;
@@ -13,7 +15,10 @@ typedef struct {
     bool valid;
 } sensor_sample_t;
 
-extern QueueHandle_t sensor_queue;
+typedef struct {
+    QueueHandle_t display_queue;
+    QueueHandle_t logger_queue;
+} sensor_task_params_t;
 
 esp_err_t sensor_task_init(void);
 esp_err_t sensor_task_read_average(sensor_sample_t *out_sample);

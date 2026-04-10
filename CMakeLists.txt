@@ -2,5 +2,13 @@
 # CMakeLists in this exact order for cmake to work correctly
 cmake_minimum_required(VERSION 3.16)
 
+set(EXTRA_COMPONENT_DIRS
+    tasks/display
+    tasks/sensors
+    tasks/storage
+    tasks/time
+    tasks/wifi
+)
+
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 project(air_monitor)

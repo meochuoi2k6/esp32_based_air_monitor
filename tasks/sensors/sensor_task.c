@@ -7,10 +7,8 @@
 #include "freertos/task.h"
 #include "esp_err.h"
 #include "esp_log.h"
-#include "queue.h"
 
 #include "bme680.h"
-#include "i2cdev.h"
 
 ////////////////// UART TASK ///////////////////////
 
@@ -26,8 +24,6 @@ static const char *TAG = "sensor_task";
 static bme680_t bme;
 static sensor_sample_t latest_sample;
 static bool sensor_ready = false;
-
-QueueHandle_t sensor_queue;
 
 static void uart_init(void)
 {
@@ -57,15 +53,15 @@ static void bme_init(void)
 
     ESP_ERROR_CHECK(
          bme680_init_desc(&bme, BME680_I2C_ADDR_0, I2C_PORT, SDA_GPIO, SCL_GPIO)
-     );
+    );
 
     ESP_ERROR_CHECK(bme680_init_sensor(&bme));
+    ESP_ERROR_CHECK(bme680_use_heater_profile(&bme, BME680_HEATER_NOT_USED));
 }
 
 esp_err_t sensor_task_init(void)
 {
     uart_init();
-    i2cdev_init();
     bme_init();
 
     memset(&latest_sample, 0, sizeof(latest_sample));
@@ -144,7 +140,7 @@ esp_err_t sensor_task_get_latest(sensor_sample_t *out_sample)
 void sensor_task(void *pvParameters)
 {
     sensor_sample_t sample;
-    (void)pvParameters;
+    sensor_task_params_t *params = (sensor_task_params_t *)pvParameters;
 
     if (sensor_task_init() != ESP_OK) {
         ESP_LOGE(TAG, "Sensor task init failed");
@@ -162,8 +158,14 @@ void sensor_task(void *pvParameters)
                      sample.temperature,
                      sample.humidity,
                      sample.pressure);
-            
-            xQueueSend(sensor_queue, &sample, portMAX_DELAY);
+
+            if (params != NULL && params->display_queue != NULL) {
+                xQueueSend(params->display_queue, &sample, portMAX_DELAY);
+            }
+
+            if (params != NULL && params->logger_queue != NULL) {
+                xQueueSend(params->logger_queue, &sample, portMAX_DELAY);
+            }
 
         } else {
             ESP_LOGE(TAG, "sensor_task_read_average failed: %s", esp_err_to_name(err));

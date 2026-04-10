@@ -1,9 +1,16 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "esp_err.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 #include "sensor_task.h"
+
+typedef struct {
+    QueueHandle_t sensor_queue;
+} display_params_t;
 
 void oled_init();
 void draw_char(int x, int y, char c);

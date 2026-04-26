@@ -10,11 +10,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#define WIFI_SSID "ANH TUAN 2G"
-#define WIFI_PASS "0904543663" //This part will be replaced by getting ssid and pass in the future
+#define WIFI_SSID ":)" //This part will be replaced by getting ssid and pass in the future
+#define WIFI_PASS "88888888" //This part will be replaced by getting ssid and pass in the future
 
 static const char *TAG = "WIFI";
-static bool isWifi = 0;
+    static bool isWifi = 0;
 
 static void wifi_event_handler(void* arg,
                                esp_event_base_t event_base,

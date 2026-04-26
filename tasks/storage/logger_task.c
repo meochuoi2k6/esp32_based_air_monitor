@@ -11,7 +11,6 @@
 
 #include "logger_task.h"
 #include "sensor_task.h"
-#include "time_tasks.h"
 
 static const char *TAG = "logger_task";
 
@@ -91,7 +90,7 @@ bool init_sd_card(void)
     return true;
 }
 
-static esp_err_t w_sd(char *time_s, int pm25, int pm10, float temp, float hum, float pres)
+static esp_err_t w_sd(const char *time_s, int pm25, int pm10, float temp, float hum, float pres)
 {
     FILE *f = fopen(SD_LOG_FILE, "a");
     if (f == NULL) {
@@ -126,10 +125,9 @@ esp_err_t logger_write_sample(const sensor_sample_t *sample)
         return ESP_ERR_INVALID_STATE;
     }
 
-    char time_s[30];
-    get_time_str(time_s, sizeof(time_s));
+    const char *timestamp = sample->timestamp[0] != '\0' ? sample->timestamp : "UNSYNC";
 
-    esp_err_t err = w_sd(time_s,
+    esp_err_t err = w_sd(timestamp,
                          sample->pm25,
                          sample->pm10,
                          sample->temperature,
@@ -176,7 +174,7 @@ void logger_task(void *pvParameters)
             if (err != ESP_OK) {
                 ESP_LOGW(TAG, "logger_write_sample failed: %s", esp_err_to_name(err));
             } else {
-                ESP_LOGI(TAG, "Sample logged to SD");
+                ESP_LOGI(TAG, "Sample logged to SD at %s", sample.timestamp);
             }
         }
     }

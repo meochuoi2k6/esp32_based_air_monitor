@@ -1,7 +1,7 @@
 # Build
 build/
 
-# ESP-IDF config
+# ESP-IDF local config
 sdkconfig
 sdkconfig.old
 dependencies.lock
@@ -20,11 +20,16 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+.venv/
 
-# Git submodule
+# Local ESP-IDF checkout
 esp-idf/
 
-# Some bruhh things
-docs/
+# Local certificates and private keys
+certs/*.pem
+certs/*.key
+certs/*.crt
+
+# Local planning notes
 ROADMAP.md
 PROMPT.md

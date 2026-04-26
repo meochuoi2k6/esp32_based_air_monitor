@@ -9,6 +9,7 @@
 #include "esp_log.h"
 
 #include "bme680.h"
+#include "time_tasks.h"
 
 ////////////////// UART TASK ///////////////////////
 
@@ -116,6 +117,7 @@ esp_err_t sensor_task_read_average(sensor_sample_t *out_sample)
     out_sample->temperature = temp_sum / SAMPLE_COUNT;
     out_sample->humidity = hum_sum / SAMPLE_COUNT;
     out_sample->pressure = pres_sum / SAMPLE_COUNT;
+    get_time_str(out_sample->timestamp, sizeof(out_sample->timestamp));
     out_sample->valid = true;
 
     latest_sample = *out_sample;
@@ -152,7 +154,8 @@ void sensor_task(void *pvParameters)
         esp_err_t err = sensor_task_read_average(&sample);
         if (err == ESP_OK) {
             ESP_LOGI(TAG,
-                     "PM2.5=%d PM10=%d Temp=%.2f Hum=%.2f Pres=%.2f",
+                     "[%s] PM2.5=%d PM10=%d Temp=%.2f Hum=%.2f Pres=%.2f",
+                     sample.timestamp,
                      sample.pm25,
                      sample.pm10,
                      sample.temperature,
@@ -165,6 +168,10 @@ void sensor_task(void *pvParameters)
 
             if (params != NULL && params->logger_queue != NULL) {
                 xQueueSend(params->logger_queue, &sample, portMAX_DELAY);
+            }
+
+            if (params != NULL && params->cloud_queue != NULL) {
+                xQueueSend(params->cloud_queue, &sample, portMAX_DELAY);
             }
 
         } else {

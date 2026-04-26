@@ -1,0 +1,154 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/146.0.0.0">
+  <diagram id="air-monitor-state-machine" name="Air Monitor State Machine" compressed="false">
+    <mxGraphModel dx="6768" dy="3008" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="boot" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Boot" vertex="1">
+          <mxGeometry height="73.61" width="64.37" x="-3893.08" y="-840" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="boot" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;" target="init" value="UART, I2C, OLED,&#xa;BME680 ready">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="start" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="boot" value="Power on&#xa;or wakeup">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+            <mxPoint x="-4360" y="-469" as="sourcePoint" />
+            <mxPoint x="-4264" y="-468.99550724637675" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="start" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#4d4d4d;strokeColor=#4d4d4d;fontFamily=Times New Roman;fontSize=14;" value="" vertex="1">
+          <mxGeometry height="10.03450884334138" width="10.03450884334138" x="-3880.0049295774647" y="-959.9977777777777" as="geometry" />
+        </mxCell>
+        <mxCell id="init" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Init Hardware" vertex="1">
+          <mxGeometry height="73.61" width="84.92271099744246" x="-3903.3567774936064" y="-659.96" as="geometry" />
+        </mxCell>
+        <mxCell id="wifi" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Connect WiFi" vertex="1">
+          <mxGeometry height="73.61" width="78.21428571428572" x="-3899.997619047619" y="-485.66999999999996" as="geometry" />
+        </mxCell>
+        <mxCell id="time" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Sync Time" vertex="1">
+          <mxGeometry height="73.61" width="56.55" x="-3760" y="-485.66999999999996" as="geometry" />
+        </mxCell>
+        <mxCell id="sd" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Init SD Card" vertex="1">
+          <mxGeometry height="73.61" width="67.55" x="-3610" y="-485.66999999999996" as="geometry" />
+        </mxCell>
+        <mxCell id="sample" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Sampling PM&amp;nbsp;&lt;div&gt;+ BME680&lt;/div&gt;" vertex="1">
+          <mxGeometry height="73.61" width="140" x="-3442.05" y="-485.66999999999996" as="geometry" />
+        </mxCell>
+        <mxCell id="display" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Display + Log" vertex="1">
+          <mxGeometry height="73.61111111111113" width="200.49295774647882" x="-3474.5841918175724" y="-629.9966666666666" as="geometry" />
+        </mxCell>
+        <mxCell id="sleep" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Deep Sleep" vertex="1">
+          <mxGeometry height="73.61111111111113" width="169.64788732394365" x="-3459.165347082496" y="-790.0044444444443" as="geometry" />
+        </mxCell>
+        <mxCell id="wifi_retry" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="WiFi Retry" vertex="1">
+          <mxGeometry height="72.28" width="185.07" x="-3945.07" y="-290" as="geometry" />
+        </mxCell>
+        <mxCell id="offline" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="Offline Mode" vertex="1">
+          <mxGeometry height="73.61111111111113" width="185.0704225352113" x="-3709.9999731723674" y="-311.94444444444434" as="geometry" />
+        </mxCell>
+        <mxCell id="sd_fail" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d9d9d9;strokeColor=#7f7f7f;fontStyle=1;fontFamily=Times New Roman;fontSize=14;" value="SD Unavailable" vertex="1">
+          <mxGeometry height="73.61111111111113" width="215.9154929577464" x="-3490.002994634474" y="-300.00444444444435" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="init" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;" target="wifi" value="Start WiFi stack">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="wifi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;" target="time" value="Got IP">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="time" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;" target="sd" value="SNTP synced">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="sd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;" target="sample" value="SD mounted">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="sample" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;" target="display" value="Enough valid&lt;div&gt;&amp;nbsp;samples collected&lt;/div&gt;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="display" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;" target="sleep" value="OLED updated and&#xa;log attempt done">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="wifi" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fontFamily=Times New Roman;fontSize=14;" target="wifi_retry" value="Disconnected">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-3840" y="-378" />
+              <mxPoint x="-3820" y="-378" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="wifi_retry" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;exitX=0.324;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;fontFamily=Times New Roman;fontSize=14;" target="wifi" value="Retry connect">
+          <mxGeometry relative="1" x="-0.1807" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="-3885" y="-380" />
+              <mxPoint x="-3885" y="-380" />
+            </Array>
+            <mxPoint x="-3797.465" y="-290.03" as="sourcePoint" />
+            <mxPoint x="-3878.0976190476194" y="-412.75248999999997" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="time" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;fontFamily=Times New Roman;fontSize=14;" target="offline" value="Sync timeout&#xa;continue offline">
+          <mxGeometry relative="1" x="-0.3825" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="-3730" y="-412" />
+              <mxPoint x="-3730" y="-275" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="offline" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;entryX=0.25;entryY=1;entryDx=0;entryDy=0;fontFamily=Times New Roman;fontSize=14;" target="sd" value="Skip network time">
+          <mxGeometry relative="1" x="-0.2433" y="22" as="geometry">
+            <mxPoint x="-10" y="2" as="offset" />
+            <Array as="points">
+              <mxPoint x="-3620" y="-360" />
+              <mxPoint x="-3593" y="-360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="sd" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;fillColor=none;labelBackgroundColor=#FFFFFF;fontFamily=Times New Roman;fontSize=14;" target="sd_fail" value="Mount failed&#xa;continue without log">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-3560" y="-356" />
+              <mxPoint x="-3420" y="-356" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;entryX=0.549;entryY=1.011;entryDx=0;entryDy=0;entryPerimeter=0;fontFamily=Times New Roman;fontSize=14;" target="sample" value="Display only">
+          <mxGeometry relative="1" x="-0.1993" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="-3365" y="-312" />
+              <mxPoint x="-3365" y="-390" />
+            </Array>
+            <mxPoint x="-3364" y="-311.94444444444434" as="sourcePoint" />
+            <mxPoint x="-3366" y="-412.05999999999983" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="sample" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;fontFamily=Times New Roman;fontSize=14;" target="sample" value="Invalid PM frame&#xa;read again">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-3210" y="-431" />
+              <mxPoint x="-3210" y="-467" />
+            </Array>
+            <mxPoint x="-2904.5271629778676" y="-533.17" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="end_outer" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffffff;strokeColor=#7f7f7f;strokeWidth=2;fontFamily=Times New Roman;fontSize=14;" value="" vertex="1">
+          <mxGeometry height="11.706926983898272" width="11.706926983898272" x="-3380.1928973843064" y="-889.9966666666664" as="geometry" />
+        </mxCell>
+        <mxCell id="_mXWDBXNOzg9HYEC3QQm-9" parent="1" style="text;whiteSpace=wrap;html=1;align=center;labelBorderColor=none;fontColor=default;textShadow=0;labelBackgroundColor=default;" value="&lt;font face=&quot;Times New Roman&quot;&gt;&lt;span style=&quot;font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Wakeup timer&lt;/span&gt;&lt;br style=&quot;forced-color-adjust: none; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; box-shadow: none !important;&quot;&gt;&lt;span style=&quot;font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: nowrap; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;started&lt;/span&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="110" x="-3474.58" y="-860" as="geometry" />
+        </mxCell>
+        <mxCell id="_mXWDBXNOzg9HYEC3QQm-10" edge="1" parent="1" source="sleep" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="end_outer" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="-3390" y="-850" as="sourcePoint" />
+            <mxPoint x="-3340" y="-900" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="end_inner" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#4d4d4d;strokeColor=#4d4d4d;fontFamily=Times New Roman;fontSize=14;" value="" vertex="1">
+          <mxGeometry height="10" width="10" x="-3379.34" y="-889.14" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

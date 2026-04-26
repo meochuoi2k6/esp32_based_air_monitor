@@ -11,14 +11,24 @@
 
 static char time_str[20];
 
-void init_time()
+static bool s_time_synced = false;
+static bool isWifi = 0;
+
+bool time_is_synced(void)
+{
+    return s_time_synced;
+}
+
+esp_err_t init_time(void)
 {
     setenv("TZ", "ICT-7", 1);
     tzset();
-
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(0, "pool.ntp.org");
+    sntp_set_sync_mode(SNTP_SYNC_MODE_IMMED);
     sntp_init();
+
+    return ESP_OK;
 }
 
 bool wait_for_time_sync(int max_wait_ms)
@@ -54,12 +64,14 @@ void time_task(void *pvParameters)
     (void)pvParameters;
 
     while (1) {
-        if (wifi_is_connected()) {
+        if (wifi_is_connected()&& !s_time_synced) {
             init_time();
-            if (!wait_for_time_sync(20000)) {
+            if (!wait_for_time_sync(30000)) {
                 printf("Time sync timeout, continuing without SNTP time\n");
+                s_time_synced = false;
             } else {
                 get_time_str(time_str, sizeof(time_str));
+                s_time_synced = true;
             }
             vTaskDelete(NULL);
             return;

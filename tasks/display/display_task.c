@@ -122,7 +122,8 @@ void display_task(void *pvParameters)
             if(err != ESP_OK){
                 ESP_LOGE(TAG, "Display Error: %s", esp_err_to_name(err));
             } else {
-                ESP_LOGI(TAG, "Display success\nPM2.5: %d\nPM10: %d\ntemp: %.1f\nhum: %.1f\n pres: %.1f", 
+                ESP_LOGI(TAG, "Display success [%s]\nPM2.5: %d\nPM10: %d\ntemp: %.1f\nhum: %.1f\n pres: %.1f",
+                    sample.timestamp,
                     sample.pm25, 
                     sample.pm10, 
                     sample.temperature, 

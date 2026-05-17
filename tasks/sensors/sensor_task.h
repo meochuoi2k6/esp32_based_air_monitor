@@ -24,18 +24,18 @@
 /**
  * @brief sensor_sample_t: Cấu trúc lưu trữ một bộ dữ liệu (sample) từ các cảm biến.
  * 
+ * Các trường dữ liệu:
+ * @brief- `pm25`: Chỉ số bụi mịn PM2.5 (ug/m3)
+ * @brief- `pm10`: Chỉ số bụi mịn PM10 (ug/m3)
+ * @brief- `temperature`: Nhiệt độ (độ C)
+ * @brief- `humidity`: Độ ẩm tương đối (%)
+ * @brief- `pressure`: Áp suất không khí (hPa)
+ * @brief- `timestamp`: Chuỗi thời gian lúc lấy mẫu
+ * @brief- `valid`: Cờ báo hiệu dữ liệu hợp lệ hay không
+ * 
  * @note Dữ liệu bụi mịn (PM2.5, PM10) lấy từ cảm biến PMS7003 (UART). Dữ liệu môi trường 
  * (temperature, humidity, pressure) lấy từ BME680 (I2C). Các trường `timestamp` và `valid` 
  * đánh dấu tính hợp lệ của mẫu.
- * 
- * Các trường dữ liệu:
- * - pm25: Chỉ số bụi mịn PM2.5 (ug/m3)
- * - pm10: Chỉ số bụi mịn PM10 (ug/m3)
- * - temperature: Nhiệt độ (độ C)
- * - humidity: Độ ẩm tương đối (%)
- * - pressure: Áp suất không khí (hPa)
- * - timestamp: Chuỗi thời gian lúc lấy mẫu
- * - valid: Cờ báo hiệu dữ liệu hợp lệ hay không
  */
 typedef struct sensor_sample_t {
     int pm25;           /*!< Chỉ số bụi mịn PM2.5 (ug/m3) */
@@ -50,13 +50,13 @@ typedef struct sensor_sample_t {
 /**
  * @brief sensor_task_params_t: Cấu trúc tham số khởi tạo task cảm biến.
  * 
- * Các trường dữ liệu:
- * @brief- `display_queue`: Hàng đợi gửi dữ liệu cho display_task
- * @brief- `logger_queue`: Hàng đợi gửi dữ liệu cho logger_task
- * @brief- `cloud_queue`: Hàng đợi gửi dữ liệu cho aws_iot_task
- * 
  * @note Chứa danh sách các hàng đợi (queue) để đẩy mẫu dữ liệu sau khi đọc xong tới các task 
  * xử lý khác (như hiển thị, lưu thẻ nhớ, hoặc gửi lên Cloud).
+ * 
+ * Các trường dữ liệu:
+ * - display_queue: Hàng đợi gửi dữ liệu cho display_task
+ * - logger_queue: Hàng đợi gửi dữ liệu cho logger_task
+ * - cloud_queue: Hàng đợi gửi dữ liệu cho aws_iot_task
  */
 typedef struct sensor_task_params_t {
     QueueHandle_t display_queue; /*!< Hàng đợi gửi dữ liệu cho display_task */
@@ -104,6 +104,4 @@ esp_err_t sensor_task_get_latest(sensor_sample_t *out_sample);
  * hợp lệ thì xQueueSend tới display, logger, cloud. Sau đó delay 1 khoảng (VD: 1000ms).
  */
 void sensor_task(void *pvParameters);
-
-nsor_task(void *pvParameters);
 

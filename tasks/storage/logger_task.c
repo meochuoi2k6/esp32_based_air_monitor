@@ -23,11 +23,23 @@ static bool sd_ready = false;
 static bool sd_bus_initialized = false;
 static sdmmc_card_t *sd_card = NULL;
 
+/**
+ * @brief Kiểm tra xem thẻ SD có sẵn sàng không.
+ * 
+ * @note Hàm này chỉ trả về giá trị của biến cờ sd_ready để báo trạng thái hoạt động của thẻ SD.
+ * @return true nếu sẵn sàng, false nếu chưa.
+ */
 bool logger_is_sd_ready(void)
 {
     return sd_ready;
 }
 
+/**
+ * @brief Ngắt kết nối và giải phóng tài nguyên của thẻ SD.
+ * 
+ * @note Cơ chế là thực hiện unmount hệ thống file FAT của thẻ SD trước, sau đó giải phóng 
+ * phần cứng bus SPI nếu đang được khởi tạo, và cuối cùng đặt các cờ trạng thái về false.
+ */
 static void logger_unmount_sd_card(void)
 {
     if (sd_card != NULL) {
@@ -43,6 +55,15 @@ static void logger_unmount_sd_card(void)
     sd_ready = false;
 }
 
+/**
+ * @brief Khởi tạo giao tiếp SPI và cấu hình thẻ SD.
+ * 
+ * @note Hàm sẽ kiểm tra cờ sd_ready để tránh khởi tạo nhiều lần. Cơ chế gồm: 
+ * 1. Khởi tạo bus SPI dùng các GPIO định sẵn (MOSI:23, MISO:19, CLK:18). 
+ * 2. Cấu hình thiết bị SPI cho thẻ SD dùng GPIO CS là 5. 
+ * 3. Dùng thư viện esp_vfs_fat_sdspi_mount để mount thẻ nhớ.
+ * @return true nếu thành công, ngược lại trả về false.
+ */
 bool init_sd_card(void)
 {
     if (sd_ready) {
@@ -90,6 +111,21 @@ bool init_sd_card(void)
     return true;
 }
 
+/**
+ * @brief Ghi dữ liệu trực tiếp vào file.
+ * 
+ * @param time_s Chuỗi thời gian.
+ * @param pm25 Giá trị PM2.5.
+ * @param pm10 Giá trị PM10.
+ * @param temp Giá trị nhiệt độ.
+ * @param hum Giá trị độ ẩm.
+ * @param pres Giá trị áp suất.
+ * 
+ * @note Cơ chế là mở file csv (chế độ "a" - append) trên thẻ SD, dùng fprintf để nối chuỗi 
+ * các thông số cách nhau bởi dấu phẩy. Sau đó gọi fflush và fclose để đảm bảo dữ liệu 
+ * được lưu xuống hoàn toàn.
+ * @return ESP_OK nếu quá trình ghi file ổn định, ngược lại trả về ESP_FAIL.
+ */
 static esp_err_t w_sd(const char *time_s, int pm25, int pm10, float temp, float hum, float pres)
 {
     FILE *f = fopen(SD_LOG_FILE, "a");
@@ -115,6 +151,16 @@ static esp_err_t w_sd(const char *time_s, int pm25, int pm10, float temp, float 
     return ESP_OK;
 }
 
+/**
+ * @brief Bọc gói quá trình ghi thông số cảm biến.
+ * 
+ * @param sample Cấu trúc chứa thông tin tổng hợp của môi trường.
+ * 
+ * @note Kiểm tra xem mẫu thử có hợp lệ không và thẻ SD có kết nối chưa. Xử lý chuỗi thời gian 
+ * chưa được đồng bộ nếu cần và gọi w_sd. Nếu gọi thất bại, tự động kích hoạt hàm 
+ * logger_unmount_sd_card để giải phóng tài nguyên lỗi.
+ * @return Mã lỗi theo chuẩn ESP_ERR_*.
+ */
 esp_err_t logger_write_sample(const sensor_sample_t *sample)
 {
     if (sample == NULL || !sample->valid) {
@@ -142,6 +188,15 @@ esp_err_t logger_write_sample(const sensor_sample_t *sample)
     return err;
 }
 
+/**
+ * @brief Task xử lý chính vòng lặp ghi thẻ nhớ.
+ * 
+ * @param pvParameters Tham số truyền từ lúc khởi tạo Task.
+ * 
+ * @note Cơ chế là chạy một vòng lặp vô hạn, lấy dữ liệu cảm biến ra khỏi queue 
+ * (params->sensor_queue). Khi lấy thành công, nếu thẻ SD đang lỗi kết nối, task sẽ cố 
+ * gắng thử gọi init_sd_card lại theo chu kỳ định sẵn (SD_RETRY_INTERVAL_MS). Sau đó lưu dữ liệu đó.
+ */
 void logger_task(void *pvParameters)
 {
     logger_task_params_t *params = (logger_task_params_t *)pvParameters;

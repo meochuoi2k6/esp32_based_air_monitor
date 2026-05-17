@@ -1,3 +1,11 @@
+/**
+ * @file display_task.c
+ * @brief Triển khai các hàm hiển thị dữ liệu và trạng thái lên màn hình OLED SSD1306.
+ * 
+ * @note File này chịu trách nhiệm khởi tạo kết nối I2C, vẽ các thành phần đồ họa 
+ * (ký tự, chuỗi, bitmap) và liên tục cập nhật dữ liệu từ hàng đợi cảm biến.
+ */
+
 #include "display_task.h"
 
 #include "freertos/FreeRTOS.h"

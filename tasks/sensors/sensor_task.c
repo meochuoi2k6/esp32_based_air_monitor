@@ -1,3 +1,12 @@
+/**
+ * @file sensor_task.c
+ * @brief Triển khai chức năng giao tiếp với các module cảm biến (BME680, PMS7003).
+ * 
+ * @note File này chịu trách nhiệm cấu hình UART để đọc dữ liệu từ cảm biến bụi PMS7003, 
+ * cấu hình I2C để đọc BME680. Hàm task chính sẽ liên tục thực hiện lấy mẫu (kết hợp lấy 
+ * trung bình để giảm nhiễu) và đẩy số liệu mới vào các hàng đợi (queues) cung cấp cho hệ thống.
+ */
+
 #include "sensor_task.h"
 
 #include <string.h>

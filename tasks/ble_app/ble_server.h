@@ -28,3 +28,10 @@ void ble_init(void);
  * kết nối thành công.
  */
 void ble_send_notify(const char *data);
+
+/**
+ * @brief Task chính để chạy BLE Server.
+ * 
+ * @param param Tham số đầu vào task.
+ */
+void ble_server_task(void *param);

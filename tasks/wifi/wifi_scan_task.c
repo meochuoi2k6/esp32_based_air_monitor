@@ -66,19 +66,35 @@ static void do_wifi_scan(void)
 
         if (ap_records[i].primary > 14) continue; // chỉ 2.4GHz
 
+        int remaining = JSON_BUF_SIZE - len;
+        if (remaining <= 0) break;
+
         if (count > 0) {
-            len += snprintf(cached_json + len, JSON_BUF_SIZE - len, ",");
+            int w = snprintf(cached_json + len, remaining, ",");
+            if (w > 0 && w < remaining) len += w;
+            remaining = JSON_BUF_SIZE - len;
         }
 
-        len += snprintf(cached_json + len, JSON_BUF_SIZE - len,
+        if (remaining <= 0) break;
+
+        int w = snprintf(cached_json + len, remaining,
                         "{\"ssid\":\"%s\",\"rssi\":%d}",
                         (char*)ap_records[i].ssid,
                         ap_records[i].rssi);
+        if (w > 0 && w < remaining) {
+            len += w;
+        } else {
+            len += (remaining - 1);
+            break;
+        }
 
         count++;
     }
 
-    len += snprintf(cached_json + len, JSON_BUF_SIZE - len, "]");
+    int remaining = JSON_BUF_SIZE - len;
+    if (remaining > 0) {
+        len += snprintf(cached_json + len, remaining, "]");
+    }
 
     cached_len = len;
 

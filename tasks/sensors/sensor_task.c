@@ -61,12 +61,16 @@ static void bme_init(void)
 {
     memset(&bme, 0, sizeof(bme));
 
-    ESP_ERROR_CHECK(
-         bme680_init_desc(&bme, BME680_I2C_ADDR_0, I2C_PORT, SDA_GPIO, SCL_GPIO)
-    );
+    if (bme680_init_desc(&bme, BME680_I2C_ADDR_0, I2C_PORT, SDA_GPIO, SCL_GPIO) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init BME680 descriptor");
+        return;
+    }
 
-    ESP_ERROR_CHECK(bme680_init_sensor(&bme));
-    ESP_ERROR_CHECK(bme680_use_heater_profile(&bme, BME680_HEATER_NOT_USED));
+    if (bme680_init_sensor(&bme) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init BME680 sensor");
+        return;
+    }
+    bme680_use_heater_profile(&bme, BME680_HEATER_NOT_USED);
 }
 
 esp_err_t sensor_task_init(void)
@@ -102,14 +106,33 @@ esp_err_t sensor_task_read_average(sensor_sample_t *out_sample)
     memset(out_sample, 0, sizeof(*out_sample));
 
     while (count < SAMPLE_COUNT) {
-        ESP_ERROR_CHECK(bme680_force_measurement(&bme));
-        vTaskDelay(pdMS_TO_TICKS(200));
-        ESP_ERROR_CHECK(bme680_get_results_float(&bme, &values));
+        if (bme680_force_measurement(&bme) == ESP_OK) {
+            vTaskDelay(pdMS_TO_TICKS(200));
+            bme680_get_results_float(&bme, &values);
+        }
 
-        int len = uart_read_bytes(UART_PORT, data, sizeof(data), pdMS_TO_TICKS(200));
+        uint8_t ch;
+        bool synced = false;
+        for (int i = 0; i < 64; i++) {
+            if (uart_read_bytes(UART_PORT, &ch, 1, pdMS_TO_TICKS(10)) == 1 && ch == 0x42) {
+                if (uart_read_bytes(UART_PORT, &ch, 1, pdMS_TO_TICKS(10)) == 1 && ch == 0x4D) {
+                    synced = true;
+                    break;
+                }
+            }
+        }
 
-        if (len != sizeof(data) || data[0] != 0x42 || data[1] != 0x4D) {
+        if (!synced) {
             ESP_LOGW(TAG, "Invalid PMS7001 frame, retrying");
+            continue;
+        }
+
+        data[0] = 0x42;
+        data[1] = 0x4D;
+        int len = uart_read_bytes(UART_PORT, data + 2, 30, pdMS_TO_TICKS(100));
+        
+        if (len != 30) {
+            ESP_LOGW(TAG, "Incomplete PMS7001 frame, retrying");
             continue;
         }
 
@@ -172,15 +195,15 @@ void sensor_task(void *pvParameters)
                      sample.pressure);
 
             if (params != NULL && params->display_queue != NULL) {
-                xQueueSend(params->display_queue, &sample, portMAX_DELAY);
+                xQueueSend(params->display_queue, &sample, 0);
             }
 
             if (params != NULL && params->logger_queue != NULL) {
-                xQueueSend(params->logger_queue, &sample, portMAX_DELAY);
+                xQueueSend(params->logger_queue, &sample, 0);
             }
 
             if (params != NULL && params->cloud_queue != NULL) {
-                xQueueSend(params->cloud_queue, &sample, portMAX_DELAY);
+                xQueueSend(params->cloud_queue, &sample, 0);
             }
 
         } else {

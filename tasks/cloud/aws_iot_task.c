@@ -153,7 +153,7 @@ void aws_iot_task(void *pvParameters)
             esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID,
                                            mqtt_event_handler, NULL);
 
-            esp_mqtt_connect(client); // Có thể gọi thẳng theo cấu hình MQTT mới
+            esp_mqtt_client_start(client);
 
             ESP_LOGI(TAG, "MQTT started");
         }

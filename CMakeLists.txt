@@ -9,7 +9,7 @@ set(EXTRA_COMPONENT_DIRS
     tasks/storage
     tasks/time
     tasks/wifi
-    tasks/bluetooth
+    tasks/ble_app
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

@@ -47,10 +47,8 @@ static void logger_unmount_sd_card(void)
         sd_card = NULL;
     }
 
-    if (sd_bus_initialized) {
-        spi_bus_free(SD_HOST_SLOT);
-        sd_bus_initialized = false;
-    }
+    // Do not free SPI bus to prevent conflict with other devices
+    // and to avoid driver corruption from repeated init/free cycles.
 
     sd_ready = false;
 }

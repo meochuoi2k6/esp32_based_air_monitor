@@ -112,18 +112,23 @@ void time_task(void *pvParameters)
 {
     (void)pvParameters;
 
+    static bool sntp_initialized = false;
     while (1) {
-        if (wifi_is_connected()&& !s_time_synced) {
-            init_time();
+        if (wifi_is_connected() && !s_time_synced) {
+            if (!sntp_initialized) {
+                init_time();
+                sntp_initialized = true;
+            }
             if (!wait_for_time_sync(30000)) {
-                printf("Time sync timeout, continuing without SNTP time\n");
-                s_time_synced = false;
+                printf("Time sync timeout, will retry in 5 minutes\n");
+                vTaskDelay(pdMS_TO_TICKS(5 * 60 * 1000));
+                continue;
             } else {
                 get_time_str(time_str, sizeof(time_str));
                 s_time_synced = true;
+                vTaskDelete(NULL);
+                return;
             }
-            vTaskDelete(NULL);
-            return;
         }
 
         vTaskDelay(pdMS_TO_TICKS(1000));

@@ -10,6 +10,7 @@
 #include "time_tasks.h"
 #include "wifi_task.h"
 #include "aws_iot_task.h"
+#include "ble_server.h"
 
 #define SAMPLE_QUEUE_LENGTH 4
 
@@ -52,4 +53,5 @@ void app_main(void)
     xTaskCreate(display_task, "display_task", 4096, &display_params, 4, NULL);
     xTaskCreate(logger_task, "logger_task", 4096, &logger_params, 4, NULL);
     xTaskCreate(aws_iot_task, "aws_iot_task", 4096, &aws_iot_task_params, 4, NULL);
+    xTaskCreate(ble_server_task, "ble_server_task", 4096, NULL, 5, NULL);
 }

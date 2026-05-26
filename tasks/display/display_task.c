@@ -37,14 +37,17 @@ void oled_init()
 {
     memset(&oled, 0, sizeof(oled));
 
-    ESP_ERROR_CHECK(
-        ssd1306_init_desc(&oled, I2C_NUM_0, SSD1306_I2C_ADDR0, 21, 22)
-    );
+    if (ssd1306_init_desc(&oled, I2C_NUM_0, SSD1306_I2C_ADDR0, 21, 22) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init OLED descriptor");
+        return;
+    }
 
     oled.width = 128;
     oled.height = 64;
 
-    ESP_ERROR_CHECK(ssd1306_init(&oled));
+    if (ssd1306_init(&oled) != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to init OLED hardware");
+    }
 }
 
 void draw_char(int x, int y, char c)

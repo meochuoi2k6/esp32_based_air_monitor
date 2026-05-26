@@ -19,8 +19,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-static const char *TAG = "WIFI";
-    static bool isWifi = 0;
+static const char *TAG = "WIFI_TASK";
+
+static bool isWifi = false;
+static bool manual_connecting = false;
 
 /**
  * @brief Xử lý các sự kiện hệ thống liên quan đến WiFi và IP.
@@ -42,9 +44,11 @@ static void wifi_event_handler(void* arg,
         esp_wifi_connect();
     }
     else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
-        ESP_LOGI(TAG, "Retrying...");
         isWifi = false;
-        esp_wifi_connect();
+        if (!manual_connecting) {
+            ESP_LOGI(TAG, "Retrying...");
+            esp_wifi_connect();
+        }
     }
     else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ESP_LOGI(TAG, "Got IP!");
@@ -64,6 +68,7 @@ static void wifi_event_handler(void* arg,
  */
 void wifi_connect(const char *ssid, const char *pass)
 {
+    manual_connecting = true;
     wifi_config_t wifi_config = {0};
 
     strncpy((char*)wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
@@ -72,8 +77,10 @@ void wifi_connect(const char *ssid, const char *pass)
     ESP_LOGI(TAG, "Connecting to SSID: %s", ssid);
 
     esp_wifi_disconnect();
+    vTaskDelay(100 / portTICK_PERIOD_MS); // Cho phép event loop xử lý xong sự kiện disconnect cũ
     esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     esp_wifi_connect();
+    manual_connecting = false;
 }
 
 /**

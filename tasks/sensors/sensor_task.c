@@ -29,7 +29,7 @@ static const char *TAG = "sensor_task";
 #define RX_PIN 16
 
 #define SAMPLE_COUNT 5
-#define SENSOR_TASK_PERIOD_MS 1000
+#define SENSOR_TASK_PERIOD_MS 55000
 
 static bme680_t bme;
 static sensor_sample_t latest_sample;
@@ -102,10 +102,13 @@ esp_err_t sensor_task_read_average(sensor_sample_t *out_sample)
     float hum_sum = 0;
     float pres_sum = 0;
     int count = 0;
+    int retry_count = 0;
 
     memset(out_sample, 0, sizeof(*out_sample));
 
-    while (count < SAMPLE_COUNT) {
+    while (count < SAMPLE_COUNT && retry_count < 10) {
+        bme680_values_float_t values;
+        memset(&values, 0, sizeof(values)); // Xóa rác bộ nhớ nếu đọc lỗi
         if (bme680_force_measurement(&bme) == ESP_OK) {
             vTaskDelay(pdMS_TO_TICKS(200));
             bme680_get_results_float(&bme, &values);
@@ -113,9 +116,11 @@ esp_err_t sensor_task_read_average(sensor_sample_t *out_sample)
 
         uint8_t ch;
         bool synced = false;
+        // Chờ tối đa 2000ms cho byte đầu tiên vì cảm biến gửi 1 lần/giây
         for (int i = 0; i < 64; i++) {
-            if (uart_read_bytes(UART_PORT, &ch, 1, pdMS_TO_TICKS(10)) == 1 && ch == 0x42) {
-                if (uart_read_bytes(UART_PORT, &ch, 1, pdMS_TO_TICKS(10)) == 1 && ch == 0x4D) {
+            int wait_time = (i == 0) ? 2000 : 20;
+            if (uart_read_bytes(UART_PORT, &ch, 1, pdMS_TO_TICKS(wait_time)) == 1 && ch == 0x42) {
+                if (uart_read_bytes(UART_PORT, &ch, 1, pdMS_TO_TICKS(20)) == 1 && ch == 0x4D) {
                     synced = true;
                     break;
                 }
@@ -124,6 +129,7 @@ esp_err_t sensor_task_read_average(sensor_sample_t *out_sample)
 
         if (!synced) {
             ESP_LOGW(TAG, "Invalid PMS7001 frame, retrying");
+            retry_count++;
             continue;
         }
 
@@ -133,6 +139,7 @@ esp_err_t sensor_task_read_average(sensor_sample_t *out_sample)
         
         if (len != 30) {
             ESP_LOGW(TAG, "Incomplete PMS7001 frame, retrying");
+            retry_count++;
             continue;
         }
 
@@ -144,11 +151,16 @@ esp_err_t sensor_task_read_average(sensor_sample_t *out_sample)
         count++;
     }
 
-    out_sample->pm25 = pm25_sum / SAMPLE_COUNT;
-    out_sample->pm10 = pm10_sum / SAMPLE_COUNT;
-    out_sample->temperature = temp_sum / SAMPLE_COUNT;
-    out_sample->humidity = hum_sum / SAMPLE_COUNT;
-    out_sample->pressure = pres_sum / SAMPLE_COUNT;
+    if (count == 0) {
+        ESP_LOGE(TAG, "Sensor read failed entirely");
+        return ESP_FAIL;
+    }
+
+    out_sample->pm25 = pm25_sum / count;
+    out_sample->pm10 = pm10_sum / count;
+    out_sample->temperature = temp_sum / count;
+    out_sample->humidity = hum_sum / count;
+    out_sample->pressure = pres_sum / count;
     get_time_str(out_sample->timestamp, sizeof(out_sample->timestamp));
     out_sample->valid = true;
 

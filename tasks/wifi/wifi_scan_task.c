@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "ble_server.h"
+
 #define TAG "WIFI_SCAN"
 
 #define MAX_AP 10
@@ -58,7 +60,7 @@ static void do_wifi_scan(void)
     esp_wifi_scan_get_ap_records(&number, ap_records);
 
     int len = 0;
-    len += snprintf(cached_json + len, JSON_BUF_SIZE - len, "[");
+    len += snprintf(cached_json + len, JSON_BUF_SIZE - len, "{\"tag\":\"wifi_scan\",\"data\":[");
 
     int count = 0;
 
@@ -93,12 +95,13 @@ static void do_wifi_scan(void)
 
     int remaining = JSON_BUF_SIZE - len;
     if (remaining > 0) {
-        len += snprintf(cached_json + len, remaining, "]");
+        len += snprintf(cached_json + len, remaining, "]}");
     }
 
     cached_len = len;
 
-    ESP_LOGI(TAG, "Scan done (%d AP)", count);
+    ESP_LOGI(TAG, "Scan done (%d AP), sending via BLE", count);
+    ble_send_notify(cached_json);
 }
 
 // ================= TASK =================

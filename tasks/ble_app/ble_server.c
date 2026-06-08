@@ -321,6 +321,11 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
             // Write to CCCD (descriptor is typically characteristic handle + 1)
             ESP_LOGI(TAG, "CCCD updated");
         }
+        
+        // CRITICAL FIX: Send response if client requires it (prevents 15s timeout on Android)
+        if (param->write.need_rsp) {
+            esp_ble_gatts_send_response(gatts_if, param->write.conn_id, param->write.trans_id, ESP_GATT_OK, NULL);
+        }
         break;
 
     default:

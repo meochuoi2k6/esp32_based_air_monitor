@@ -29,7 +29,7 @@ static const char *TAG = "sensor_task";
 #define RX_PIN 16
 
 #define SAMPLE_COUNT 5
-#define SENSOR_TASK_PERIOD_MS 55000
+#define SENSOR_TASK_PERIOD_MS 5000
 
 static bme680_t bme;
 static sensor_sample_t latest_sample;

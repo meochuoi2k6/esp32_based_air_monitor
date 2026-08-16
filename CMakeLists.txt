@@ -10,6 +10,7 @@ set(EXTRA_COMPONENT_DIRS
     tasks/time
     tasks/wifi
     tasks/ble_app
+    tasks/profiler
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

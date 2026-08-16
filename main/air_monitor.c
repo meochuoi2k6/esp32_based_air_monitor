@@ -3,15 +3,16 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 
+#include "aws_iot_task.h"
+#include "ble_server.h"
 #include "display_task.h"
 #include "i2cdev.h"
 #include "logger_task.h"
+#include "profiler_task.h"
 #include "sensor_task.h"
 #include "time_tasks.h"
 #include "wifi_task.h"
 #include "wifi_scan_task.h"
-#include "aws_iot_task.h"
-#include "ble_server.h"
 
 #define SAMPLE_QUEUE_LENGTH 4
 
@@ -26,9 +27,12 @@ static display_params_t display_params;
 static logger_task_params_t logger_params;
 static aws_iot_task_params_t aws_iot_task_params;
 
+static profiler_handles_t prof_handles;
 
 void app_main(void)
 {
+    TaskHandle_t handle;
+
     ESP_ERROR_CHECK(i2cdev_init());
 
     display_queue = xQueueCreate(SAMPLE_QUEUE_LENGTH, sizeof(sensor_sample_t));
@@ -48,12 +52,29 @@ void app_main(void)
     logger_params.sensor_queue = logger_queue;
     aws_iot_task_params.cloud_queue = cloud_queue;
 
-    xTaskCreate(wifi_task, "wifi_task", 4096, NULL, 5, NULL);
-    xTaskCreate(wifi_scan_task, "wifi_scan_task", 4096, NULL, 3, NULL);
-    xTaskCreate(time_task, "time_task", 4096, NULL, 4, NULL);
-    xTaskCreate(sensor_task, "sensor_task", 4096, &sensor_params, 5, NULL);
-    xTaskCreate(display_task, "display_task", 4096, &display_params, 4, NULL);
-    xTaskCreate(logger_task, "logger_task", 4096, &logger_params, 4, NULL);
-    xTaskCreate(aws_iot_task, "aws_iot_task", 4096, &aws_iot_task_params, 4, NULL);
-    xTaskCreate(ble_server_task, "ble_server_task", 4096, NULL, 5, NULL);
+    xTaskCreate(wifi_task, "wifi_task", 4096, NULL, 5, &handle);
+    profiler_register(&prof_handles, handle, "wifi_task");
+
+    xTaskCreate(wifi_scan_task, "wifi_scan_task", 4096, NULL, 3, &handle);
+    profiler_register(&prof_handles, handle, "wifi_scan_task");
+
+    xTaskCreate(time_task, "time_task", 4096, NULL, 4, &handle);
+    profiler_register(&prof_handles, handle, "time_task");
+
+    xTaskCreate(sensor_task, "sensor_task", 4096, &sensor_params, 5, &handle);
+    profiler_register(&prof_handles, handle, "sensor_task");
+
+    xTaskCreate(display_task, "display_task", 4096, &display_params, 4, &handle);
+    profiler_register(&prof_handles, handle, "display_task");
+
+    xTaskCreate(logger_task, "logger_task", 4096, &logger_params, 4, &handle);
+    profiler_register(&prof_handles, handle, "logger_task");
+
+    xTaskCreate(aws_iot_task, "aws_iot_task", 4096, &aws_iot_task_params, 4, &handle);
+    profiler_register(&prof_handles, handle, "aws_iot_task");
+
+    xTaskCreate(ble_server_task, "ble_server_task", 4096, NULL, 5, &handle);
+    profiler_register(&prof_handles, handle, "ble_server_task");
+
+    xTaskCreate(profiler_task, "profiler_task", 2048, &prof_handles, 1, NULL);
 }
